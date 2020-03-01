@@ -1,0 +1,170 @@
+general: {
+	configs_folder = "/opt/janus/etc/janus"			# Configuration files folder
+	plugins_folder = "/opt/janus/lib/janus/plugins"			# Plugins folder
+	transports_folder = "/opt/janus/lib/janus/transports"	# Transports folder
+	events_folder = "/opt/janus/lib/janus/events"			# Event handlers folder
+	loggers_folder = "/opt/janus/lib/janus/loggers"			# External loggers folder
+
+	log_to_stdout = true					# Whether the Janus output should be written
+											# to stdout or not (default=true)
+	debug_level = 4							# Debug/logging level, valid values are 0-7
+	debug_timestamps = true				# Whether to show a timestamp for each log line
+	#debug_colors = false					# Whether colors should be disabled in the log
+	#debug_locks = true						# Whether to enable debugging of locks (very verbose!)
+	log_prefix = "[janus] "				# In case you want log lines to be prefixed by some
+											# custom text, you can use the 'log_prefix' property.
+											# It supports terminal colors, meaning something like
+											# "[\x1b[32mjanus\x1b[0m] " would show a green "janus"
+											# string in square brackets (assuming debug_colors=true).
+
+		# There are different ways you can authenticate the Janus and Admin APIs
+	#api_secret = "janusrocks"		# String that all Janus requests must contain
+									# to be accepted/authorized by the Janus core.
+									# Useful if you're wrapping all Janus API requests
+									# in your servers (that is, not in the browser,
+									# where you do the things your way) and you
+									# don't want other application to mess with
+									# this Janus instance.
+	#token_auth = true				# Enable a token based authentication
+									# mechanism to force users to always provide
+									# a valid token in all requests. Useful if
+									# you want to authenticate requests from web
+									# users.
+	#token_auth_secret = "janus"	# Use HMAC-SHA1 signed tokens (with token_auth). Note that
+									# without this, the Admin API MUST
+									# be enabled, as tokens are added and removed
+									# through messages sent there.
+	admin_secret = "janusoverlord"	# String that all Janus requests must contain
+									# to be accepted/authorized by the admin/monitor.
+									# only needed if you enabled the admin API
+									# in any of the available transports.
+
+		# Generic settings
+	#interface = "1.2.3.4"			# Interface to use (will be used in SDP)
+	#server_name = "MyJanusInstance"# Public name of this Janus instance
+									# as it will appear in an info request
+	#session_timeout = 60			# How long (in seconds) we should wait before
+									# deciding a Janus session has timed out. A
+									# session times out when no request is received
+									# for session_timeout seconds (default=60s).
+									# Setting this to 0 will disable the timeout
+									# mechanism, which is NOT suggested as it may
+									# risk having orphaned sessions (sessions not
+									# controlled by any transport and never freed).
+									# To avoid timeouts, keep-alives can be used.
+	#candidates_timeout = 45		# How long (in seconds) we should keep hold of
+									# pending (trickle) candidates before discarding
+									# them (default=45s). Notice that setting this
+									# to 0 will NOT disable the timeout, but will
+									# be considered an invalid value and ignored.
+	#reclaim_session_timeout = 0	# How long (in seconds) we should wait for a
+									# janus session to be reclaimed after the transport
+									# is gone. After the transport is gone, a session
+									# times out when no request is received for
+									# reclaim_session_timeout seconds (default=0s).
+									# Setting this to 0 will disable the timeout
+									# mechanism, and sessions will be destroyed immediately
+									# if the transport is gone.
+	#recordings_tmp_ext = "tmp"		# The extension for recordings, in Janus, is
+									# .mjr, a custom format we devised ourselves.
+									# By default, we save to .mjr directly. If you'd
+									# rather the recording filename have a temporary
+									# extension while it's being saved, and only
+									# have the .mjr extension when the recording
+									# is over (e.g., to automatically trigger some
+									# external scripts), then uncomment and set the
+									# recordings_tmp_ext property to the extension
+									# to add to the base (e.g., tmp --> .mjr.tmp).
+	#event_loops = 8				# By default, Janus handles each have their own
+									# event loop and related thread for all the media
+									# routing and management. If for some reason you'd
+									# rather limit the number of loop/threads, and
+									# you want handles to share those, you can do that
+									# configuring the event_loops property: this will
+									# spawn the specified amount of threads at startup,
+									# run a separate event loop on each of them, and
+									# add new handles to one of them when attaching.
+									# Notice that, while cutting the number of threads
+									# and possibly reducing context switching, this
+									# might have an impact on the media delivery,
+									# especially if the available loops can't take
+									# care of all the handles and their media in time.
+									# As such, if you want to use this you should
+									# provision the correct value according to the
+									# available resources (e.g., CPUs available).
+	#opaqueid_in_api = true			# Opaque IDs set by applications are typically
+									# only passed to event handlers for correlation
+									# purposes, but not sent back to the user or
+									# application in the related Janus API responses
+									# or events; in case you need them to be in the
+									# Janus API too, set this property to 'true'.
+	#hide_dependencies = true		# By default, a call to the "info" endpoint of
+									# either the Janus or Admin API now also returns
+									# the versions of the main dependencies (e.g.,
+									# libnice, libsrtp, which crypto library is in
+									# use and so on). Should you want that info not
+									# to be disclose, set 'hide_dependencies' to true.
+
+		# The following is ONLY useful when debugging RTP/RTCP packets,
+		# e.g., to look at unencrypted live traffic with a browser. By
+		# default it is obviously disabled, as WebRTC mandates encryption.
+	#no_webrtc_encryption = true
+
+		# Janus provides ways via its API to specify custom paths to save
+		# files to (e.g., recordings, pcap captures and the like). In order
+		# to avoid people can mess with folders they're not supposed to,
+		# you can configure an array of folders that Janus should prevent
+		# creating files in. By default no folder is protected, unless the
+		# 'protected_folder' property below is uncommented and configured.
+		# Notice that at the moment this only covers attempts to start
+		# an .mjr recording and pcap/text2pcap packet captures.
+	protected_folders = [
+		"/bin",
+		"/boot",
+		"/dev",
+		"/etc",
+		"/initrd",
+		"/lib",
+		"/lib32",
+		"/lib64",
+		"/proc",
+		"/root",
+		"/sbin",
+		"/sys",
+		"/usr",
+		"/var",
+			# We add what are usually the folders Janus is installed to
+			# as well: we don't just put "/opt/janus" because that would
+			# include folders like "/opt/janus/share" that is where
+			# recordings might be saved to by some plugins
+		"/opt/janus/bin",
+		"/opt/janus/etc",
+		"/opt/janus/include",
+		"/opt/janus/lib",
+		"/opt/janus/lib32",
+		"/opt/janus/lib64",
+		"/opt/janus/sbin"
+	]
+}
+
+certificates: {
+}
+
+media: {
+}
+
+nat: {
+	nice_debug = false
+}
+
+plugins: {
+}
+
+transports: {
+}
+
+loggers: {
+}
+
+events: {
+}

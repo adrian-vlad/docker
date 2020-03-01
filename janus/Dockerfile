@@ -1,5 +1,18 @@
 FROM buildpack-deps:disco
 
+ENV JANUS_PORT_HTTP 8088
+ENV JANUS_PORT_STREAMING_START 10000
+
+ENV JANUS_INSTALL_DIR /opt/janus
+ENV JANUS_CFG_DIR ${JANUS_INSTALL_DIR}/etc/janus
+ENV JANUS_BIN_PATH ${JANUS_INSTALL_DIR}/bin/janus
+
+ENV STREAMING_DIR_PATH /opt/streaming
+ENV STREAMING_CFG_PATH ${STREAMING_DIR_PATH}/streaming.yml
+
+ENV SCRIPTS_DIR_PATH /opt/app
+ENV SCRIPTS_START_PATH ${SCRIPTS_DIR_PATH}/start.sh
+
 RUN rm -rf /var/lib/apt/lists/*
 RUN apt-get -y update && apt-get install -y \
     libmicrohttpd-dev \
@@ -34,7 +47,7 @@ RUN apt-get -y update && apt-get install -y \
     && git clone https://github.com/meetecho/janus-gateway.git \
     && cd janus-gateway \
     && sh autogen.sh \
-    && ./configure --enable-static --disable-websockets --disable-data-channels --disable-rabbitmq --disable-docs --prefix=/opt/janus \
+    && ./configure --disable-docs --disable-all-plugins --disable-all-transports --enable-plugin-streaming --enable-rest --enable-sample-event-handler --prefix=${JANUS_INSTALL_DIR} \
     && make \
     && make install \
     && make configs \
@@ -48,9 +61,17 @@ RUN apt-get -y update && apt-get install -y \
     pkg-config \
     gtk-doc-tools
 
-VOLUME /etc/janus
+RUN apt-get -y install \
+    python3 \
+    python3-pip \
+    && python3 -m pip install pyyaml
 
-EXPOSE 8088/tcp 8000/udp
+COPY etc/* ${JANUS_CFG_DIR}/
 
-CMD ["/opt/janus/bin/janus", "-F", "/etc/janus"]
+COPY scripts/* ${SCRIPTS_DIR_PATH}/
 
+VOLUME ["${STREAMING_DIR_PATH}"]
+
+CMD ["sh", "-c", "exec sh ${SCRIPTS_START_PATH}"]
+
+# CMD ffmpeg -loglevel error -i rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://192.168.111.16:10001
