@@ -1,0 +1,19 @@
+{% for name, value in streaming_config.items() %}
+
+[program:ffmpeg_{{ name }}]
+command=ffmpeg -loglevel error -i {{ value.src }} -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://localhost:{{ janus_port_streaming_start + value.id }}
+umask=022
+priority=1
+autostart=true
+autorestart=true
+startsecs=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+
+{% endfor %}

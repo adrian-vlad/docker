@@ -13,6 +13,8 @@ ENV STREAMING_CFG_PATH ${STREAMING_DIR_PATH}/streaming.yml
 ENV SCRIPTS_DIR_PATH /opt/app
 ENV SCRIPTS_START_PATH ${SCRIPTS_DIR_PATH}/start.sh
 
+ENV SUPERVISOR_CFG_DIR_PATH /etc/supervisor
+
 RUN rm -rf /var/lib/apt/lists/*
 RUN apt-get -y update && apt-get install -y \
     libmicrohttpd-dev \
@@ -66,12 +68,17 @@ RUN apt-get -y install \
     python3-pip \
     && python3 -m pip install pyyaml jinja2
 
-COPY etc/* ${JANUS_CFG_DIR}/
+RUN apt-get -y install \
+    supervisor
 
-COPY scripts/* ${SCRIPTS_DIR_PATH}/
+RUN apt-get -y install \
+    ffmpeg
+
+COPY etc/janus/ ${JANUS_CFG_DIR}/
+COPY etc/supervisor/ ${SUPERVISOR_CFG_DIR_PATH}/
+
+COPY scripts/ ${SCRIPTS_DIR_PATH}/
 
 VOLUME ["${STREAMING_DIR_PATH}"]
 
 CMD ["sh", "-c", "exec sh ${SCRIPTS_START_PATH}"]
-
-# CMD ffmpeg -loglevel error -i rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://192.168.111.16:10001

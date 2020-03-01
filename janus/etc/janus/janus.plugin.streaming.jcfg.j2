@@ -9,11 +9,11 @@ general: {
 {% endif %}
 {{ name }}: {
     type = "rtp"
-    id = {{ loop.index }}
+    id = {{ value.id }}
     description = "{{ name }}"
     audio = false
     video = true
-    videoport = {{ janus_port_streaming_start + loop.index }}
+    videoport = {{ janus_port_streaming_start + value.id }}
     videopt = 96
     videortpmap = "H264/90000"
     videofmtp = "profile-level-id=42e028;packetization-mode=1"
