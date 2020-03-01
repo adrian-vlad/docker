@@ -64,7 +64,7 @@ RUN apt-get -y update && apt-get install -y \
 RUN apt-get -y install \
     python3 \
     python3-pip \
-    && python3 -m pip install pyyaml
+    && python3 -m pip install pyyaml jinja2
 
 COPY etc/* ${JANUS_CFG_DIR}/
 
