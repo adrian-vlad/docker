@@ -1,7 +1,7 @@
 {% for name, value in streaming_config.items() %}
 
 [program:ffmpeg_{{ name }}]
-command=ffmpeg -loglevel error -i {{ value.src }} -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://localhost:{{ janus_port_streaming_start + value.id }}
+command=ffmpeg -loglevel error -rtsp_transport {{ value.rtsp_transport | default("udp", true) }} -i "{{ value.src }}" -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://localhost:{{ janus_port_streaming_start + value.id }}
 umask=022
 priority=1
 autostart=true
