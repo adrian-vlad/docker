@@ -14,6 +14,7 @@ def install_config_file_from_template(conf_file_path, vars_dict):
 
 vars = {
     "streaming_config_file_path": os.environ["STREAMING_CFG_PATH"],
+    "scripts_dir_path": os.environ["SCRIPTS_DIR_PATH"],
     "janus_bin_path": os.environ["JANUS_BIN_PATH"],
     "janus_port_streaming_start": int(os.environ["JANUS_PORT_STREAMING_START"]),
     "janus_cfg_streaming_file_path": os.path.join(os.environ["JANUS_CFG_DIR"], "janus.plugin.streaming.jcfg"),
@@ -38,6 +39,7 @@ with open(vars["streaming_config_file_path"], "r") as f:
 install_config_file_from_template(vars["janus_cfg_streaming_file_path"], vars)
 
 # Supervisor conf files
+install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "process_listener.conf"), vars)
 install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "janus.conf"), vars)
 install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "ffmpeg.conf"), vars)
 

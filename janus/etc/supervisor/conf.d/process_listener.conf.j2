@@ -1,5 +1,5 @@
-[program:janus]
-command={{ janus_bin_path }}
+[eventlistener:process_listener]
+command=python2 {{ scripts_dir_path }}/process_listener.py
 umask=022
 priority=1
 autostart=true
@@ -10,7 +10,8 @@ stopsignal=INT
 stopwaitsecs=5
 stopasgroup=true
 killasgroup=true
-stdout_logfile=/dev/fd/1
-stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
+
+buffer_size=100
+events=PROCESS_STATE_FATAL
