@@ -42,6 +42,7 @@ install_config_file_from_template(vars["janus_cfg_streaming_file_path"], vars)
 install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "process_listener.conf"), vars)
 install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "janus.conf"), vars)
 install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "ffmpeg.conf"), vars)
+install_config_file_from_template(os.path.join(vars["supervisor_cfg_dir_path"], "conf.d", "web_server.conf"), vars)
 
 
 sys.exit(0)

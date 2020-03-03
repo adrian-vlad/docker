@@ -1,0 +1,16 @@
+[program:web_server]
+command=python3 {{ scripts_dir_path }}/web_server.py
+umask=022
+priority=1
+autostart=true
+autorestart=true
+startsecs=5
+startretries=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0

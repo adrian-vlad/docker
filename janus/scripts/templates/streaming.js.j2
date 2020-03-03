@@ -1,0 +1,70 @@
+
+var janus = null;
+var streaming = null;
+
+Janus.init({ callback: function() {
+    if (!Janus.isWebrtcSupported()) {
+        console.error("No WebRTC support... ");
+        return;
+    }
+
+    janus = new Janus({
+        server: "http://{{ ip }}:8088/janus",
+        success: function() {
+            janus.attach({
+                plugin: "janus.plugin.streaming",
+                opaqueId: "streaming-" + Janus.randomString(12),
+                success: function(pluginHandle) {
+                    streaming = pluginHandle;
+
+                    streaming.send({
+                        "message": { 
+                            "request": "watch", 
+                            id: parseInt({{ id }}) 
+                        }
+                    });
+                },
+                error: function(error) {
+                    console.error("Error attaching plugin... ", error);
+                },
+                onmessage: function(msg, jsep) {
+                    if (msg["error"] !== undefined && msg["error"] !== null) {
+                        console.error(msg["error"]);
+                        return;
+                    }
+                    
+                    if (jsep !== undefined && jsep !== null) {
+                        // Offer from the plugin, let's answer
+                        streaming.createAnswer({
+                            jsep: jsep,
+                            // We want recvonly audio/video and, if negotiated, datachannels
+                            media: { audioSend: false, videoSend: false, data: true },
+                            success: function(jsep) {
+                                streaming.send({ "message": { "request": "start" }, "jsep": jsep });
+                            },
+                            error: function(error) {
+                                console.error("WebRTC error:", error);
+                            }
+                        });
+                    }
+                },
+                onremotestream: function(stream) {
+            	    Janus.attachMediaStream(document.getElementById("video_stream"), stream);
+                },
+                ondataopen: function(data) {
+                },
+                ondata: function(data) {
+                },
+                oncleanup: function() {
+                }
+            });
+        },  
+        error: function(error) {
+            console.log(error);
+            location.reload();
+        },
+        destroyed: function() {
+        }
+    });
+}});
+

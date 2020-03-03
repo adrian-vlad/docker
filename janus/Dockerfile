@@ -1,5 +1,8 @@
 FROM buildpack-deps:disco
 
+ENV JANUS_VERSION v0.9.0
+ENV LIBNICE_VERSION 0.1.16
+
 ENV JANUS_PORT_HTTP 8088
 ENV JANUS_PORT_STREAMING_START 10000
 
@@ -39,7 +42,7 @@ RUN apt-get -y update && apt-get install -y \
     && mkdir /tmp/libnice && cd /tmp/libnice \
     && git clone https://gitlab.freedesktop.org/libnice/libnice.git \
     && cd libnice \
-    && git checkout 0.1.16 \
+    && git checkout ${LIBNICE_VERSION} \
     && bash autogen.sh \
     && ./configure --prefix=/usr \
     && make \
@@ -48,6 +51,7 @@ RUN apt-get -y update && apt-get install -y \
     && mkdir /tmp/janus && cd /tmp/janus \
     && git clone https://github.com/meetecho/janus-gateway.git \
     && cd janus-gateway \
+    && git checkout ${JANUS_VERSION} \
     && sh autogen.sh \
     && ./configure --disable-docs --disable-all-plugins --disable-all-transports --enable-plugin-streaming --enable-rest --enable-sample-event-handler --prefix=${JANUS_INSTALL_DIR} \
     && make \
@@ -66,7 +70,7 @@ RUN apt-get -y update && apt-get install -y \
 RUN apt-get -y install \
     python3 \
     python3-pip \
-    && python3 -m pip install pyyaml jinja2
+    && python3 -m pip install pyyaml jinja2 flask
 
 RUN apt-get -y install \
     supervisor
