@@ -70,19 +70,14 @@ RUN apt-get -y update && apt-get install -y \
 RUN apt-get -y install \
     python3 \
     python3-pip \
-    && python3 -m pip install pyyaml jinja2 flask
+    supervisor \
+    ffmpeg \
+    nginx \
+    && python3 -m pip install pyyaml jinja2 flask gunicorn
 
-RUN apt-get -y install \
-    supervisor
-
-RUN apt-get -y install \
-    ffmpeg
-
-COPY etc/janus/ ${JANUS_CFG_DIR}/
-COPY etc/supervisor/ ${SUPERVISOR_CFG_DIR_PATH}/
-
-COPY scripts/ ${SCRIPTS_DIR_PATH}/
+COPY etc/ /etc/
+COPY opt/ /opt/
 
 VOLUME ["${STREAMING_DIR_PATH}"]
 
-CMD ["sh", "-c", "exec sh ${SCRIPTS_START_PATH}"]
+CMD ["sh", "-c", "exec sh /opt/scripts/start.sh"]

@@ -1,3 +1,4 @@
+var JANUS_SERVER_URI = "http://{{ ip }}:8088/janus";
 
 var janus = null;
 var streaming = null;
@@ -9,7 +10,7 @@ Janus.init({ callback: function() {
     }
 
     janus = new Janus({
-        server: "http://{{ ip }}:8088/janus",
+        server: JANUS_SERVER_URI,
         success: function() {
             janus.attach({
                 plugin: "janus.plugin.streaming",

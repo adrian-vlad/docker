@@ -18,4 +18,4 @@ def streaming_html(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='80', threaded=True, use_reloader=False)
+    app.run()

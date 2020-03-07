@@ -1,5 +1,5 @@
-[program:web_server]
-command=python3 {{ scripts_dir_path }}/web_server.py
+[program:nginx]
+command=/usr/sbin/nginx -g "daemon off;"
 umask=022
 priority=1
 autostart=true

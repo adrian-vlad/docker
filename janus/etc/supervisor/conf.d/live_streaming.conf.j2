@@ -1,5 +1,6 @@
-[program:janus]
-command=/opt/janus/bin/janus -F /etc/janus
+[program:live_streaming]
+command=gunicorn --workers 1 --bind unix:/var/run/gunicorn.sock -m 007 live_streaming:app
+directory=/opt/scripts/live_streaming
 umask=022
 priority=1
 autostart=true
