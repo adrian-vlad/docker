@@ -65,10 +65,9 @@ RUN apt-get -y update && apt-get install -y \
 RUN apt-get -y install \
     python3 \
     python3-pip \
-    supervisor \
     ffmpeg \
     nginx \
-    && python3 -m pip install pyyaml jinja2 flask gunicorn
+    && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor
 
 # patch liveProxy code to increase it's buffer so it does not have any problems with big streams
 # add port reuse flag

@@ -54,12 +54,4 @@ for template in template_file_list:
 with open("/etc/streaming.json", "w") as f:
     json.dump(vars["streaming_config"], f)
 
-# Prepare the recordings directory
-for stream_name, config in vars["streaming_config"].items():
-    for i in range(0, 7):
-        str_date = (datetime.date.today() + datetime.timedelta(days=i)).strftime('%Y_%m_%d')
-        dir_path = os.path.join(vars["recordings_dir_path"], stream_name, str_date)
-        if not os.path.isdir(dir_path):
-            os.makedirs(dir_path, exist_ok=True)
-
 sys.exit(0)
