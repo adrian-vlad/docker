@@ -2,7 +2,7 @@
 general: {
 }
 
-{% for name, value in streaming_config.items() %}
+{% for name, value in streaming_config["camera"].items() %}
 {% if name == "general" %}
 {# 'general' cannot be used as stream name #}
 {{ 0/0 }}

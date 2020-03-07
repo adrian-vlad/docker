@@ -1,7 +1,7 @@
 [program:nginx]
 command=/usr/sbin/nginx -g "daemon off;"
 umask=022
-priority=1
+priority=40
 autostart=true
 autorestart=true
 startsecs=5
@@ -14,3 +14,7 @@ stdout_logfile=/dev/fd/1
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
+
+[group:nginx]
+programs=nginx
+priority=40

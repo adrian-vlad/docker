@@ -1,0 +1,60 @@
+{% for name, value in streaming_config["camera"].items() %}
+
+[program:{{ name }}_live555_proxy]
+command=/opt/live555/live555ProxyServer -p {{ live555_port_streaming_start + value.id }} "{{ value.src }}"
+umask=022
+priority=20
+autostart=true
+autorestart=true
+startsecs=5
+startretries=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+
+
+[program:{{ name }}_ffmpeg_recording]
+command=ffmpeg -nostdin -nostats -i "rtsp://localhost:{{ live555_port_streaming_start + value.id }}/proxyStream" -metadata title="" -c copy -an -flags +global_header -f segment -segment_time 900 -segment_atclocktime 1 -reset_timestamps 1 -segment_format mp4 -strftime 1 -y "{{ recordings_dir_path + '/' + name }}"/%%Y_%%m_%%d/%%s_%%Y-%%m-%%d_%%H-%%M-%%S.mp4
+umask=022
+priority=21
+autostart=true
+autorestart=true
+startsecs=5
+startretries=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+
+
+[program:{{ name }}_ffmpeg_live_stream]
+command=ffmpeg -loglevel error -rtsp_transport {{ value.rtsp_transport | default("udp", true) }} -i "rtsp://localhost:{{ live555_port_streaming_start + value.id }}/proxyStream" -an -c:v copy -flags global_header -bsf dump_extra -f rtp rtp://localhost:{{ janus_port_streaming_start + value.id }}
+umask=022
+priority=40
+autostart=true
+autorestart=true
+startsecs=5
+startretries=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+
+[group:{{ name }}]
+programs={{ name }}_live555_proxy,{{ name }}_ffmpeg_recording,{{ name }}_ffmpeg_live_stream
+priority=10
+
+{% endfor %}
