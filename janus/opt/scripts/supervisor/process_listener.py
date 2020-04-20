@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 from pathlib import Path
+from pymediainfo import MediaInfo
 import subprocess
 from supervisor.childutils import listener
 from supervisor import childutils
@@ -85,6 +86,74 @@ def cleanup_drive_space():
             pass
 
 
+def create_videos_list():
+    base_directory = os.environ["RECORDINGS_DIR_PATH"]
+    database_path = os.path.join(base_directory, "recordings.json")
+
+    try:
+        with open(database_path) as f:
+            database = json.load(f)
+    except Exception:
+        # TODO: specific exception
+        database = {
+            "lowest_timestamp": 2**64,
+            "highest_timestamp": 0,
+            "cameras": {cam_name: {"files": []} for cam_name in CONFIG["camera"]}
+        }
+    # force updating lowest timestamp to account for files that have been deleted due to regular cleanup
+    database["lowest_timestamp"] = 2**64
+
+    for cam_name in CONFIG["camera"]:
+        uri_prefix = "static/recordings"
+
+        recording_files = [f for f in Path(os.path.join(base_directory, cam_name)).glob("**/*") if f.is_file()]
+        for f in recording_files:
+            file_path = os.path.join(base_directory, cam_name, str(f))
+            uri = os.path.join(uri_prefix, file_path[(len(base_directory) + len(os.path.sep)):])
+
+            entry = {
+                "path": uri,
+                "duration": 0,
+                "timestamp": int(f.name.split("_")[0]) * 1000,
+                "mtime": os.path.getmtime(file_path)
+            }
+
+            skip_file = False
+            for old_entry in database["cameras"][cam_name]["files"]:
+                if entry["path"] == old_entry["path"]:
+                    if entry["mtime"] == old_entry["mtime"]:
+                        # file has not been modified since last inspection; we can skip it
+                        skip_file = True
+                    else:
+                        # the file has been modified and the duration need to be rechecked
+                        database["cameras"][cam_name]["files"].remove(old_entry)
+
+                    break
+
+            # updated the lowest timestamp
+            if database["lowest_timestamp"] > entry["timestamp"]:
+                database["lowest_timestamp"] = entry["timestamp"]
+
+            if skip_file:
+                break
+
+            durations = [track.duration for track in MediaInfo.parse(file_path).tracks if track.track_type == "Video"]
+            if durations:
+                entry["duration"] = int(durations[0])
+            else:
+                # this might not be a video file
+                continue
+
+            database["cameras"][cam_name]["files"].append(entry)
+
+            # update the highest timestamp
+            if database["highest_timestamp"] < entry["timestamp"] + entry["duration"]:
+                database["highest_timestamp"] = entry["timestamp"] + entry["duration"]
+
+    with open(database_path, "w") as f:
+        f.write(json.dumps(database, indent=2))
+
+
 def process_state_fatal(payload):
     pheaders, pdata = childutils.eventdata(payload + "\n")
     groupName = pheaders["groupname"]
@@ -126,7 +195,7 @@ def process_tick60():
     cleanup_drive_space()
 
     # create the list of videos to be loaded by the web server
-    #create_videos_list()
+    create_videos_list()
 
 
 def process_event(msg_hdr, msg_payload):

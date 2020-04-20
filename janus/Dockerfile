@@ -1,4 +1,4 @@
-FROM buildpack-deps:disco
+FROM buildpack-deps:focal
 
 ENV JANUS_VERSION v0.9.0
 ENV LIBNICE_VERSION 0.1.16
@@ -67,7 +67,8 @@ RUN apt-get -y install \
     python3-pip \
     ffmpeg \
     nginx \
-    && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor
+    mediainfo \
+    && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor pymediainfo
 
 # patch liveProxy code to increase it's buffer so it does not have any problems with big streams
 # add port reuse flag
