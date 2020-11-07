@@ -12,6 +12,6 @@ RUN apt-get -y update && apt-get install -y \
 VOLUME ["/var/lib/glusterd", "/var/log/glusterfs", "/data"]
 
 EXPOSE 24007 24008
-EXPOSE 49152-49664
+EXPOSE 49152-49160
 
 CMD ["/usr/sbin/glusterd", "-N"]
