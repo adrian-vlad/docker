@@ -1,6 +1,6 @@
 #!/bin/bashs
 
-TARGET_DIR=/data
+TARGET_DIR=/data/share
 
 mkdir -p "${TARGET_DIR}"
 
@@ -12,3 +12,5 @@ do
 
   sleep 1
 done
+
+umount "${TARGET_DIR}" || umount -fl "${TARGET_DIR}"
