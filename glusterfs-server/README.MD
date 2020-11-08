@@ -1,1 +1,1 @@
-Use `--cap-add SYS_ADMIN --device /dev/fuse` when starting the container
+Use `--init --cap-add SYS_ADMIN --device /dev/fuse` when starting the container
