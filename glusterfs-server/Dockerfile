@@ -14,4 +14,6 @@ VOLUME ["/var/lib/glusterd", "/var/log/glusterfs", "/data"]
 EXPOSE 24007 24008
 EXPOSE 49152-49160
 
-CMD ["/usr/sbin/glusterd", "-N"]
+ENV LOG_LEVEL=INFO
+
+CMD /usr/sbin/glusterd -N --log-level ${LOG_LEVEL}
