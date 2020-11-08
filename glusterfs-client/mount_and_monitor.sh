@@ -1,6 +1,6 @@
 #!/bin/bashs
 
-TARGET_DIR=/data/share
+TARGET_DIR=/data
 
 mkdir -p "${TARGET_DIR}"
 
