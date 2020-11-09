@@ -1,1 +1,1 @@
-Use `--init --cap-add SYS_ADMIN --device /dev/fuse` when starting the container
+Use `--init --cap-add SYS_ADMIN --device /dev/fuse --mount type=bind,source=${HOST_DIR},target=/data,bind-propagation=rshared` when starting the container
