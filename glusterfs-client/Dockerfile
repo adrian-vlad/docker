@@ -11,4 +11,5 @@ COPY mount_and_monitor.sh /usr/local/bin/
 
 VOLUME ["/data"]
 
-CMD sh /usr/local/bin/mount_and_monitor.sh ${VOLUME_URL}
+# must set VOLUME_URL
+CMD ["bash", "/usr/local/bin/mount_and_monitor.sh"]
