@@ -16,4 +16,4 @@ EXPOSE 49152-49160
 
 ENV LOG_LEVEL=INFO
 
-CMD /usr/sbin/glusterd -N --log-level ${LOG_LEVEL}
+CMD exec /usr/sbin/glusterd -N --log-level ${LOG_LEVEL}
