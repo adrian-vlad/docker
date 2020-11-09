@@ -3,13 +3,11 @@
 STOP=0
 trap 'STOP=1' SIGINT SIGTERM
 
-TARGET_DIR=/data/share
-
-mkdir -p "${TARGET_DIR}"
+TARGET_DIR=/data
 
 while (( STOP != 1 ))
 do
-  if ! mountpoint -q "${TARGET_DIR}"; then
+  if ! findmnt "${TARGET_DIR}" | grep -q "${VOLUME_URL}"; then
     mount --make-rshared -t glusterfs "${VOLUME_URL}" "${TARGET_DIR}"
   fi
 
