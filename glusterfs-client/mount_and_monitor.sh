@@ -8,7 +8,7 @@ TARGET_DIR=/data
 while (( STOP != 1 ))
 do
   if ! findmnt "${TARGET_DIR}" | grep -q "${VOLUME_URL}"; then
-    mount --make-rshared -t glusterfs "${VOLUME_URL}" "${TARGET_DIR}"
+    mount --make-rshared -t glusterfs -o backup-volfile-servers="${BACKUP_VOLUME_SERVERS}" "${VOLUME_URL}" "${TARGET_DIR}"
   fi
 
   sleep 1
