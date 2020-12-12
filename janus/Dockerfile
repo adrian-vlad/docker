@@ -1,4 +1,4 @@
-FROM buildpack-deps:focal
+FROM debian:buster-slim
 
 ENV JANUS_VERSION v0.9.0
 ENV LIBNICE_VERSION 0.1.16
@@ -15,6 +15,7 @@ ENV RECORDINGS_DIR_PATH /opt/static/recordings
 
 RUN rm -rf /var/lib/apt/lists/*
 RUN apt-get -y update && apt-get install -y \
+    libcurl4-gnutls-dev \
     libmicrohttpd-dev \
     libjansson-dev \
     libssl-dev \
@@ -68,12 +69,13 @@ RUN apt-get -y install \
     ffmpeg \
     nginx \
     mediainfo \
+    wget \
     && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor pymediainfo
 
 # patch liveProxy code to increase it's buffer so it does not have any problems with big streams
 # add port reuse flag
-RUN wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz \
-    && mkdir live && tar -xf live555-latest.tar.gz -C live --strip-components 1 \
+RUN wget https://download.videolan.org/pub/contrib/live555/live.2020.11.22.tar.gz -O live555.tar.gz \
+    && mkdir live && tar -xf live555.tar.gz -C live --strip-components 1 \
     && chmod -R +w live && cd live \
     && sed -i '/OutPacketBuffer::maxSize = 100000;/c \ \ OutPacketBuffer::maxSize = 10000000;' proxyServer/live555ProxyServer.cpp \
     && sed -i 's/80/0/g' proxyServer/live555ProxyServer.cpp \
