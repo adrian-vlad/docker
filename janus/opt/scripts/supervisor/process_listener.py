@@ -135,7 +135,7 @@ def create_videos_list():
                 database["lowest_timestamp"] = entry["timestamp"]
 
             if skip_file:
-                break
+                continue
 
             durations = [track.duration for track in MediaInfo.parse(file_path).tracks if track.track_type == "Video"]
             if durations:
