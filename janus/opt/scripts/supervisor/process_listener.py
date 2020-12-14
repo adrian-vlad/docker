@@ -9,6 +9,7 @@ import subprocess
 from supervisor.childutils import listener
 from supervisor import childutils
 import sys
+import traceback
 
 
 CONFIG = {}
@@ -104,6 +105,10 @@ def create_videos_list():
     database["lowest_timestamp"] = 2**64
 
     for cam_name in CONFIG["camera"]:
+        # initialize camera
+        if cam_name not in database["cameras"]:
+            database["cameras"][cam_name] = {"files": []}
+
         uri_prefix = "static/recordings"
 
         recording_files = [f for f in Path(os.path.join(base_directory, cam_name)).glob("**/*") if f.is_file()]
@@ -222,12 +227,13 @@ def main():
 
             if "eventname" in msg_hdr:
                 process_event(msg_hdr, msg_payload)
-
-            listener.ok(sys.stdout)
         except KeyboardInterrupt:
             break
         except Exception as e:
-            write_stderr(str(e))
+            traceback.print_exc(file=sys.stderr)
+            err(str(e))
+
+        listener.ok(sys.stdout)
 
 
 if __name__ == '__main__':
