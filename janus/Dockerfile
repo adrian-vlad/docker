@@ -20,6 +20,8 @@ RUN apt-get -y update && apt-get -y install \
 COPY etc/ /etc/
 COPY opt/ /opt/
 
+RUN cp /usr/local/share/janus/javascript/janus.js /opt/static/
+
 VOLUME ["${STREAMING_DIR_PATH}", "${RECORDINGS_DIR_PATH}"]
 
 CMD ["sh", "-c", "exec sh /opt/scripts/start.sh"]
