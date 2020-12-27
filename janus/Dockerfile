@@ -1,7 +1,4 @@
-FROM debian:buster-slim
-
-ENV JANUS_VERSION v0.9.0
-ENV LIBNICE_VERSION 0.1.16
+FROM canyan/janus-gateway:latest
 
 ENV JANUS_PORT_HTTP 8088
 ENV JANUS_PORT_STREAMING_START 10000
@@ -13,57 +10,7 @@ ENV STREAMING_CFG_PATH ${STREAMING_DIR_PATH}/streaming.yml
 
 ENV RECORDINGS_DIR_PATH /opt/static/recordings
 
-RUN rm -rf /var/lib/apt/lists/*
-RUN apt-get -y update && apt-get install -y \
-    libcurl4-gnutls-dev \
-    libmicrohttpd-dev \
-    libjansson-dev \
-    libssl-dev \
-    libsrtp2-dev \
-    libsofia-sip-ua-dev \
-    libglib2.0-dev \
-    libopus-dev \
-    libogg-dev \
-    libini-config-dev \
-    libcollection-dev \
-    libconfig-dev \
-    pkg-config \
-    gengetopt \
-    libtool \
-    automake \
-    build-essential \
-    git \
-    cmake \
-    gtk-doc-tools \
-    && mkdir /tmp/libnice && cd /tmp/libnice \
-    && git clone https://gitlab.freedesktop.org/libnice/libnice.git \
-    && cd libnice \
-    && git checkout ${LIBNICE_VERSION} \
-    && bash autogen.sh \
-    && ./configure --prefix=/usr \
-    && make \
-    && make install \
-    && rm -rf /tmp/libnice \
-    && mkdir /tmp/janus && cd /tmp/janus \
-    && git clone https://github.com/meetecho/janus-gateway.git \
-    && cd janus-gateway \
-    && git checkout ${JANUS_VERSION} \
-    && sh autogen.sh \
-    && ./configure --disable-docs --disable-all-plugins --disable-all-transports --enable-plugin-streaming --enable-rest --enable-sample-event-handler --prefix=/opt/janus \
-    && make \
-    && make install \
-    && make configs \
-    && rm -rf /tmp/janus \
-    && ldconfig \
-    && apt-get -y remove --purge \
-    git \
-    cmake \
-    automake \
-    build-essential \
-    pkg-config \
-    gtk-doc-tools
-
-RUN apt-get -y install \
+RUN apt-get -y update && apt-get -y install \
     python3 \
     python3-pip \
     ffmpeg \
@@ -80,6 +27,8 @@ RUN wget https://download.videolan.org/pub/contrib/live555/live.2020.11.22.tar.g
     && sed -i '/OutPacketBuffer::maxSize = 100000;/c \ \ OutPacketBuffer::maxSize = 10000000;' proxyServer/live555ProxyServer.cpp \
     && sed -i 's/80/0/g' proxyServer/live555ProxyServer.cpp \
     && sed -i '/^COMPILE_OPTS/ s/$/ -DALLOW_RTSP_SERVER_PORT_REUSE=1/' config.linux-64bit \
+    && apt-get -y install \
+        libssl-dev \
     && ./genMakefiles linux-64bit && make \
     && mkdir /opt/live555 \
     && cp proxyServer/live555ProxyServer /opt/live555/ \
