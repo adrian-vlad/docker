@@ -16,7 +16,6 @@ def install_config_file_from_template(conf_file_path, vars_dict):
 vars = {
     "streaming_config_file_path": os.environ["STREAMING_CFG_PATH"],
     "janus_port_streaming_start": int(os.environ["JANUS_PORT_STREAMING_START"]),
-    "live555_port_streaming_start": int(os.environ["LIVE555_PORT_STREAMING_START"]),
     "recordings_dir_path": os.environ["RECORDINGS_DIR_PATH"]
 }
 

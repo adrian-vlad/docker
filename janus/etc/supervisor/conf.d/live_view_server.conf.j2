@@ -1,4 +1,4 @@
-[program:live_streaming]
+[program:_live_streaming]
 command=gunicorn --workers 1 --bind unix:/var/run/gunicorn.sock -m 007 live_view_server:app
 directory=/opt/scripts/live_view_server
 umask=022
@@ -16,6 +16,6 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
 
-[group:live_streaming]
-programs=live_streaming
+[group:_live_streaming]
+programs=_live_streaming
 priority=30

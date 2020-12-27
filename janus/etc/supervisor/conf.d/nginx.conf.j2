@@ -1,4 +1,4 @@
-[program:nginx]
+[program:_nginx]
 command=/usr/sbin/nginx -g "daemon off;"
 umask=022
 priority=40
@@ -15,6 +15,6 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
 
-[group:nginx]
-programs=nginx
+[group:_nginx]
+programs=_nginx
 priority=40

@@ -37,21 +37,6 @@ def supervisor_group_restart(groupName):
     supervisor_restart(groupName + ":")
 
 
-def rtsp_stream_is_alive(stream_uri):
-    openrtsp_path = "/opt/live555/openRTSP"
-    try:
-        openrtsp_cmd = openrtsp_path + " -v -d 1 " + stream_uri + " 2> /dev/null | wc -l"
-        out = subprocess.check_output(openrtsp_cmd, shell=True)
-        if int(out) == 0:
-            # stream does not work
-            return False
-    except Exception as e:
-        err(str(e))
-        return False
-
-    return True
-
-
 def create_new_recording_dirs():
     recordings_dir_path = os.environ["RECORDINGS_DIR_PATH"]
     for name, config in CONFIG["camera"].items():
@@ -168,23 +153,6 @@ def process_state_fatal(payload):
     supervisor_group_restart(groupName)
 
 
-g_ticks_10_sec = -1
-def process_tick5():
-    global g_ticks_10_sec
-    g_ticks_10_sec = (g_ticks_10_sec + 1) % 2
-    if g_ticks_10_sec != 0:
-        # do stuff only once every 10 seconds
-        return
-
-    # check if streams are alive
-    live555_port_start = int(os.environ["LIVE555_PORT_STREAMING_START"])
-
-    for name, config in CONFIG["camera"].items():
-        if not rtsp_stream_is_alive("rtsp://localhost:" + str(live555_port_start + config["id"]) + "/proxyStream"):
-            err("stream not live for " + name)
-            supervisor_group_restart(name)
-
-
 g_ticks_10_min = -1
 def process_tick60():
     global g_ticks_10_min
@@ -206,8 +174,6 @@ def process_tick60():
 def process_event(msg_hdr, msg_payload):
     if msg_hdr["eventname"] == "PROCESS_STATE_FATAL":
         process_state_fatal(msg_payload)
-    if msg_hdr["eventname"] == "TICK_5":
-        process_tick5()
     if msg_hdr["eventname"] == "TICK_60":
         process_tick60()
 
