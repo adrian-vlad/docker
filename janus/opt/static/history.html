@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" charset="UTF-8">
 <title>History</title>
 
 <script type="text/javascript" src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
 <style>
 .slider {
     -webkit-appearance: none;
@@ -41,10 +41,6 @@
 </head>
 
 <body>
-<div id="cameras">
-    <!-- this is where cameras will be loaded dynamically -->
-</div>
-
 <div id="controls" width=100%>
     <div>
         <!-- stock controls: play, pause, current time etc -->
@@ -61,6 +57,9 @@
     </div>
 </div>
 
+<div id="cameras">
+    <!-- this is where cameras will be loaded dynamically -->
+</div>
 <script>
 // TODO: documentation
 /**
@@ -97,6 +96,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
                 id: itemId,
                 group: groupId,
                 type: "background",
+                style: "background-color: #4dc5cb;",
                 start: vis.moment(file["timestamp"]),
                 end: vis.moment(file["timestamp"]).add(file["duration"], "milliseconds"),
                 // TODO: bug in vis: tooltip for background items doesn't work: https://github.com/visjs/vis-timeline/issues/246
@@ -121,6 +121,8 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
         end: vis.moment(recordings.highest_timestamp).add(10, "minutes"),
         min: vis.moment(recordings.lowest_timestamp).subtract(1, "hours"),
         max: vis.moment(recordings.highest_timestamp).add(1, "hours"),
+        zoomFriction: 1,
+        zoomMin: 10000,
         stack: false
     };
 
@@ -155,7 +157,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
         var currentRange = timeline.getWindow().end - timeline.getWindow().start;
         var currentPosition = timestamp - timeline.getWindow().start;
         var percent = currentPosition * 100 / currentRange;
-        if (percent < 10 || percent > 90)
+        if (percent < 5 || percent > 95)
         {
             timeline.moveTo(vis.moment(timestamp));
         }
@@ -590,7 +592,7 @@ var timeline = undefined;
         }
 
         /* initialize timestamp */
-        updateTimestamp(parseInt(recordings.lowest_timestamp));
+        updateTimestamp(parseInt(recordings.highest_timestamp));
 
         AddEvent(window, "resize", updateVideoDimensions);
         updateVideoDimensions();
