@@ -7,7 +7,9 @@
 <script type="text/javascript" src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
 <style>
-
+.vis-inner {
+    padding-left: 0;
+}
 </style>
 </head>
 
@@ -51,7 +53,7 @@
  *          sets a millis timestamp on this element
  */
 // TODO: combine updateTimestampCb, pauseCb, resumeCb into one
-function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, resumeCb)
+function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisibleCb)
 {
     var groups = new vis.DataSet();
     var items = new vis.DataSet();
@@ -60,7 +62,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
 
     for (var camera in recordings.cameras)
     {
-        groups.add({id: groupId, content: camera});
+        groups.add({id: groupId, content: camera, visible: true, treeLevel: 1});
 
         recordings.cameras[camera]["files"].forEach(function(file, idx) {
             items.add({
@@ -80,7 +82,11 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
         groupId++;
     }
 
+    groups.add({id: groupId, content: "enable<br>disable", nestedGroups: groups.getIds(), visible: true, showNested: true});
+    var mainGroupId = groupId;
+
     var options = {
+        groupOrder: "content",
         rollingMode: { follow: false },
         selectable: false,
         showCurrentTime: false,
@@ -105,19 +111,50 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
 
     /* we allow for time change on click, but not if the timeline is dragged around */
     var timelineChanged = false;
+
     timeline.on("mouseDown", function() {
         timelineChanged = false;
     });
+
     timeline.on("click", function(properties) {
-        if (!timelineChanged)
+        if (properties.what == "group-label")
         {
-            pauseCb();
-            updateTimestampCb(properties.time.getTime());
-            resumeCb();
+            if (properties.group == mainGroupId)
+            {
+                if (groups.get(mainGroupId).showNested){
+                    groups.update({ id: mainGroupId, showNested: false });
+                }
+
+                return;
+            }
+
+            var anyVisible = false;
+
+            groups.forEach(function(group) {
+                if (group.id == properties.group)
+                    groups.update({ id: group.id, visible: false });
+                else
+                    if (group.visible)
+                        anyVisible = true;
+            });
+
+            if (!anyVisible)
+                groups.update({ id: mainGroupId, showNested: false });
+
+            return;
         }
+
+        if (!timelineChanged)
+            updateTimestampCb(properties.time.getTime());
     });
+
     timeline.on("changed", function() {
         timelineChanged = true;
+
+        groups.forEach(function(group) {
+            if (group.id != mainGroupId)
+                groupVisibleCb(group.content, group.visible);
+        });
     });
 
     this.setTimestamp = function(timestamp) {
@@ -163,12 +200,15 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, res
  *          loads a new source
  * @method doUpdate(int millisTimestamp):
  *          should be called as often as possible
+ * @method doVisible(boolean visible):
+ *          makes the video element visible or hidden
  */
 function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
 {
     var video = document.createElement("video");
     video.id = name;
     video.controls = true;
+    video.hidden = false;
 
     /* private properties */
     video._timestamp = 0;
@@ -242,6 +282,8 @@ function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
 
     /* public functions */
     video.doPlay = function() {
+        if (this.hidden)
+            return;
         if (this._wasLoaded)
             return;
         if (!this._canBePlayed())
@@ -255,6 +297,8 @@ function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
         }
     };
     video.doPause = function() {
+        if (this.hidden)
+            return;
         if (!this._canBePlayed())
             return;
 
@@ -266,6 +310,8 @@ function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
         }
     };
     video.doLoad = function(src, timestamp, seekTime) {
+        if (this.hidden)
+            return;
         if (!this._canBePlayed())
         {
             this.src = src;
@@ -286,38 +332,19 @@ function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
         this._wasSeek = false;
     };
     video.doUpdate = function(timestamp, playSpeed) {
+        if (this.hidden)
+            return;
         if (this._canBePlayed() && !this.ended)
             /* adjust the playback rate so that in the next 3 seconds the video timestamp aligns with the timestamp parameter */
             this.playbackRate = playSpeed + (timestamp - this._getCurrentTimestamp()) / (3 * 1000);
         else
             endedCb(this.id);
     };
+    video.doVisible = function(visible) {
+        this.hidden = !visible;
 
-    /*
-    if (name == "cam1")
-    {
-        video.onabort = function() { console.log("onabort"); };
-        video.oncanplay = function() { console.log("oncanplay"); };
-        video.oncanplaythrough = function() { console.log("oncanplaythrough"); };
-        video.oncuechange = function() { console.log("oncuechange"); };
-        video.ondurationchange = function() { console.log("ondurationchange"); };
-        video.onemptied = function() { console.log("onemptied"); };
-        video.onended = function() { console.log("onended"); };
-        video.onerror = function() { console.log("onerror"); };
-        video.onloadeddata = function() { console.log("onloadeddata"); };
-        video.onloadedmetadata = function() { console.log("onloadedmetadata"); };
-        video.onloadstart = function() { console.log("onloadstart"); };
-        video.onratechange = function() { console.log("onratechange"); };
-        video.onseeked = function() { console.log("seeked"); };
-        video.onseeking = function() { console.log("onseeking"); };
-        video.onstalled = function() { console.log("onstalled"); };
-        video.ontimeupdate = function() { console.log("ontimeupdate"); };
-        video.onvolumechange = function() { console.log("onvolumechange"); };
-        video.onwaiting = function() { console.log("onwaiting"); };
-        video.onplay = function() { console.log("onplay"); };
-        video.onplaying = function() { console.log("onplaying"); };
-        video.onpause = function() { console.log("onpause"); };
-    }*/
+        this.doPause();
+    };
 
     return video;
 }
@@ -547,7 +574,15 @@ var timeline = undefined;
         recordings = JSON.parse(this.responseText);
         camerasCount = Object.keys(recordings.cameras).length;
 
-        timeline = new RecordingsTimeline("timeline", recordings, updateTimestamp, pause, resume);
+        timeline = new RecordingsTimeline("timeline", recordings, function(timestamp) {
+            pause();
+            updateTimestamp(timestamp);
+            resume();
+        }, function(camera, visible) {
+            document.getElementById(camera).doVisible(visible);
+
+            updateVideoDimensions();
+        });
 
         /* add the cameras */
         for (var camera in recordings.cameras)
@@ -598,12 +633,18 @@ function setDisplayTimestamp(timestamp)
 
 function updateVideoDimensions()
 {
+    var count = 0;
+
+    for (var camera in recordings.cameras)
+        if (!document.getElementById(camera).hidden)
+            count++;
+
     /* calculate the new width for each video */
     var widthPercent = SurfaceSplit(
                         window.innerWidth,
                         window.innerHeight - document.getElementById("controls").offsetHeight - 15,
                         16 / 9,
-                        camerasCount);
+                        count);
 
     /* delete old rules */
     while (videoStyleSheet.cssRules.length != 0)
