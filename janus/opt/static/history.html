@@ -4,6 +4,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
 <title>History</title>
 
+<script type="text/javascript" src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
 <style>
 .slider {
     -webkit-appearance: none;
@@ -50,18 +52,17 @@
         <button id="pause"          style="float: left;"    onclick="stop()">| |</button>
         <button id="speedDown"      style="float: left;"    onclick="speedDown()">&lt;&lt;</button>
         <button id="speedUp"        style="float: left;"    onclick="speedUp()">&gt;&gt;</button>
-        <button id="toggleControls" style="float: right;"   onclick="ToggleById('controllerDiv'); updateVideoDimensions()">=</button>
+        <button id="toggleTimeline" style="float: right;"   onclick="ToggleById('timeline'); updateVideoDimensions()">=</button>
         <div id="DateTimeValue"     style="display: table; margin: auto;"></div>
     </div>
-    <div id="controllerDiv">
-        <!-- this is where the custom controller sliders and dialers are created -->
+    </br>
+    <div id="timeline">
+        <!-- this is where the timeline is created -->
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
 <script>
-//TODO: replace with wrapper object over dom elements instead of extending the elements
-//TODO: sliderele se misca din sageti, dar nu se updateaza timpul
+// TODO: documentation
 /**
  * @brief Creates a dom element that contains various other elements used to select the moment of the recording
  * @param lowTimestamp (int):
@@ -79,80 +80,88 @@
  * @method setTimestamp(int millisTimestamp):
  *          sets a millis timestamp on this element
  */
-function DateTimeSliders(lowTimestamp, highTimestamp, updateTimestampCb, pauseCb, resumeCb)
+// TODO: combine updateTimestampCb, pauseCb, resumeCb into one
+function RecordingsTimeline(divName, recordings, updateTimestampCb, pauseCb, resumeCb)
 {
-    /* create a div where we're going to attach the sliders */
-    var innerDiv = document.createElement("div");
+    var groups = new vis.DataSet();
+    var items = new vis.DataSet();
+    var groupId = 0;
+    var itemId = 0;
 
-    /* sliders */
-    var dayMilis = 86400000;
-    var hourMilis = 3600000;
-    var minuteMilis = 60000;
-    var secondMilis = 1000;
-
-    var firstDayTimestamp = moment(lowTimestamp).startOf("day");
-
-    function sliderCreate(min, max, value, className) {
-        var slider = document.createElement("input");
-        slider.type = "range";
-        slider.min = min;
-        slider.max = max;
-        slider.value = value;
-        slider.className = className;
-
-        slider.oninput = function() { updateTimestampCb(_getTimestamp()); };
-        slider.wasMouseDown = false;
-        slider.onmousedown = function() { this.wasMouseDown = true; pauseCb(); };
-        slider.onmouseup = function() { if (this.wasMouseDown) resumeCb(); this.wasMouseDown = false; };
-        slider.ontouchstart = function() { this.wasMouseDown = true; pauseCb(); };
-        slider.ontouchend = function() { if (this.wasMouseDown) resumeCb(); this.wasMouseDown = false; };
-
-        return slider;
-    };
-    var dayRangeSlider = sliderCreate(0, 100, 50, "slider");
-    var hourRangeSlider = sliderCreate(0, 23, 8, "slider");
-    var minuteRangeSlider = sliderCreate(0, 59, 5, "slider");
-    var secondRangeSlider = sliderCreate(0, 59, 5, "slider");
-
-    /* limits */
-    dayRangeSlider.min = 0;
-    dayRangeSlider.max = moment(highTimestamp).diff(moment(lowTimestamp), "days") + 1;
-    dayRangeSlider.value = parseInt((parseInt(dayRangeSlider.max) + parseInt(dayRangeSlider.min)) / 2);
-
-    /* add sliders to the div */
-    innerDiv.appendChild(dayRangeSlider);
-    innerDiv.appendChild(hourRangeSlider);
-    innerDiv.appendChild(minuteRangeSlider);
-    innerDiv.appendChild(secondRangeSlider);
-
-    /* functions */
-    function _getTimestamp()
+    for (var camera in recordings.cameras)
     {
-        return moment(firstDayTimestamp)
-                .add(parseInt(dayRangeSlider.value), "day")
-                .add(parseInt(hourRangeSlider.value), "hour")
-                .add(parseInt(minuteRangeSlider.value), "minute")
-                .add(parseInt(secondRangeSlider.value), "second")
-                .valueOf();
+        groups.add({id: groupId, content: camera});
+
+        recordings.cameras[camera]["files"].forEach(function(file, idx) {
+            items.add({
+                id: itemId,
+                group: groupId,
+                type: "background",
+                start: vis.moment(file["timestamp"]),
+                end: vis.moment(file["timestamp"]).add(file["duration"], "milliseconds"),
+                // TODO: bug in vis: tooltip for background items doesn't work: https://github.com/visjs/vis-timeline/issues/246
+                title: file["path"]
+            });
+
+            itemId++;
+        });
+
+        groupId++;
+    }
+
+    var options = {
+        rollingMode: { follow: false },
+        selectable: false,
+        showCurrentTime: false,
+        showWeekScale: true,
+        showTooltips: true,
+        verticalScroll: true,
+        horizontalScroll: true,
+        start: vis.moment(recordings.highest_timestamp).subtract(2, "hours"),
+        end: vis.moment(recordings.highest_timestamp).add(10, "minutes"),
+        min: vis.moment(recordings.lowest_timestamp).subtract(1, "hours"),
+        max: vis.moment(recordings.highest_timestamp).add(1, "hours"),
+        stack: false
     };
-    innerDiv.setTimestamp = function(timestamp) {
-        var m = moment(timestamp);
-        var tmp = moment(firstDayTimestamp);
 
-        dayRangeSlider.value = m.diff(tmp, "days");
-        tmp.add(parseInt(dayRangeSlider.value), "day");
-        hourRangeSlider.max = parseInt(moment(tmp).add(1, "day").diff(tmp, "hours")) - 1;
-        hourRangeSlider.value = m.diff(tmp, "hours");
-        tmp.add(parseInt(hourRangeSlider.value), "hour");
-        minuteRangeSlider.value = m.diff(tmp, "minutes");
-        tmp.add(parseInt(minuteRangeSlider.value), "minute");
-        secondRangeSlider.value = m.diff(tmp, "seconds");
-    };
+    var timeline = new vis.Timeline(document.getElementById(divName));
+    timeline.setOptions(options);
+    timeline.setGroups(groups);
+    timeline.setItems(items);
+    timeline.addCustomTime(vis.moment(recordings.highest_timestamp));
 
-    /* initialize sliders' positions */
-    innerDiv.setTimestamp(_getTimestamp());
+    /* we allow for time change on click, but not if the timeline is dragged around */
+    var timelineChanged = false;
+    timeline.on("mouseDown", function() {
+        timelineChanged = false;
+    });
+    timeline.on("click", function(properties) {
+        if (!timelineChanged)
+        {
+            pauseCb();
+            updateTimestampCb(properties.time.getTime());
+            resumeCb();
+        }
+    });
+    timeline.on("changed", function() {
+        timelineChanged = true;
+    });
 
-    return innerDiv;
+    this.setTimestamp = function(timestamp) {
+        /* set time */
+        timeline.setCustomTime(vis.moment(timestamp));
+
+        /* update the timeline window to have to current play time in view */
+        var currentRange = timeline.getWindow().end - timeline.getWindow().start;
+        var currentPosition = timestamp - timeline.getWindow().start;
+        var percent = currentPosition * 100 / currentRange;
+        if (percent < 10 || percent > 90)
+        {
+            timeline.moveTo(vis.moment(timestamp));
+        }
+    }
+
+    return this;
 }
 </script>
 
@@ -538,6 +547,7 @@ var timer = new Timer(1, updateSecond);
 var currentTimestamp = new Date();
 var videoStyleSheet;
 var playSpeed = 1;
+var timeline = undefined;
 {
     var videoStyle = document.createElement("style");
     videoStyle.appendChild(document.createTextNode(""));
@@ -564,6 +574,8 @@ var playSpeed = 1;
         recordings = JSON.parse(this.responseText);
         camerasCount = Object.keys(recordings.cameras).length;
 
+        timeline = new RecordingsTimeline("timeline", recordings, updateTimestamp, pause, resume);
+
         /* add the cameras */
         for (var camera in recordings.cameras)
         {
@@ -576,16 +588,6 @@ var playSpeed = 1;
                 return (file1.timestamp > file2.timestamp) ? 1 : ((file2.timestamp > file1.timestamp) ? -1 : 0);
             });
         }
-
-        /* add the sliders */
-        var dateTimeSliders = DateTimeSliders(
-            recordings.lowest_timestamp,
-            recordings.highest_timestamp,
-            updateTimestamp,
-            pause,
-            resume);
-        dateTimeSliders.id = "dateTimeController";
-        document.getElementById("controllerDiv").appendChild(dateTimeSliders);
 
         /* initialize timestamp */
         updateTimestamp(parseInt(recordings.lowest_timestamp));
@@ -601,8 +603,8 @@ var playSpeed = 1;
 function updateTimestamp(timestamp)
 {
     setCurrentTimestamp(timestamp);
-    setControllerTimestamp(timestamp);
     setDisplayTimestamp(timestamp);
+    setTimelineTimestamp(timestamp);
 }
 function updateSecond()
 {
@@ -639,11 +641,11 @@ function updateVideoDimensions()
 }
 
 /**
- * Controller interactions
+ * Timeline interactions
  */
-function setControllerTimestamp(timestamp)
+function setTimelineTimestamp(timestamp)
 {
-    document.getElementById("dateTimeController").setTimestamp(timestamp);
+    timeline.setTimestamp(timestamp);
 }
 
 /**
