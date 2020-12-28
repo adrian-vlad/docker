@@ -711,6 +711,9 @@ function loadNext(camera)
     var cameraElem = document.getElementById(camera);
     var timestamp = getCurrentTimestamp();
     var file = function (files, timestamp) {
+        if (!files || files.length <= 0)
+            return null;
+
         var startIdx = 0;
         var endIdx = files.length - 1;
         if (files[startIdx].timestamp - timestamp > 0 || files[endIdx].timestamp - timestamp < 0)
