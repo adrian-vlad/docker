@@ -7,9 +7,7 @@
 <script type="text/javascript" src="https://unpkg.com/vis-timeline/standalone/umd/vis-timeline-graph2d.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.2/moment.min.js"></script>
 <style>
-.vis-inner {
-    padding-left: 0;
-}
+
 </style>
 </head>
 
@@ -62,7 +60,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
 
     for (var camera in recordings.cameras)
     {
-        groups.add({id: groupId, content: camera, visible: true, treeLevel: 1});
+        groups.add({id: groupId, content: camera, visible: true});
 
         recordings.cameras[camera]["files"].forEach(function(file, idx) {
             items.add({
@@ -82,8 +80,36 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
         groupId++;
     }
 
-    groups.add({id: groupId, content: "enable<br>disable", nestedGroups: groups.getIds(), visible: true, showNested: true});
-    var mainGroupId = groupId;
+    function addEnableDisable() {
+        var background;
+        var backgrounds = document.getElementsByClassName("vis-panel vis-background");
+        for (var i = 0, len = backgrounds.length | 0; i < len; i++)
+        {
+            if (backgrounds[i].className == "vis-panel vis-background")
+            {
+                background = backgrounds[i];
+                break;
+            }
+        }
+
+        var center;
+        var centers = document.getElementsByClassName("vis-panel vis-center");
+        for (var i = 0, len = centers.length | 0; i < len; i++)
+        {
+            if (centers[i].className == "vis-panel vis-center")
+            {
+                center = centers[i];
+                break;
+            }
+        }
+
+        var para = document.createElement("p");
+        para.style = "position: absolute; bottom: 0; left: 0; width: ".concat(center.style.left, "; padding: 0; margin: 0; text-align: center");
+        para.appendChild(document.createTextNode("show"));
+        para.appendChild(document.createElement("br"));
+        para.appendChild(document.createTextNode("all"));
+        background.appendChild(para);
+    }
 
     var options = {
         groupOrder: "content",
@@ -110,36 +136,27 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
     timeline.addCustomTime(vis.moment(recordings.highest_timestamp));
 
     /* we allow for time change on click, but not if the timeline is dragged around */
-    var timelineChanged = false;
+    var timelineChanged = undefined;
 
     timeline.on("mouseDown", function() {
         timelineChanged = false;
     });
 
     timeline.on("click", function(properties) {
+        if (properties.what === null)
+        {
+            groups.forEach(function(group) {
+                groups.update({ id: group.id, visible: true });
+            });
+
+            return;
+        }
         if (properties.what == "group-label")
         {
-            if (properties.group == mainGroupId)
-            {
-                if (groups.get(mainGroupId).showNested){
-                    groups.update({ id: mainGroupId, showNested: false });
-                }
-
-                return;
-            }
-
-            var anyVisible = false;
-
             groups.forEach(function(group) {
                 if (group.id == properties.group)
                     groups.update({ id: group.id, visible: false });
-                else
-                    if (group.visible)
-                        anyVisible = true;
             });
-
-            if (!anyVisible)
-                groups.update({ id: mainGroupId, showNested: false });
 
             return;
         }
@@ -149,11 +166,13 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
     });
 
     timeline.on("changed", function() {
+        if (timelineChanged === undefined)
+            addEnableDisable();
+
         timelineChanged = true;
 
         groups.forEach(function(group) {
-            if (group.id != mainGroupId)
-                groupVisibleCb(group.content, group.visible);
+            groupVisibleCb(group.content, group.visible);
         });
     });
 
