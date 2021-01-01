@@ -31,9 +31,10 @@ template_file_list = [
     # supervisor configuration files
     "/etc/supervisor/conf.d/listener.conf",
     "/etc/supervisor/conf.d/janus.conf",
-    "/etc/supervisor/conf.d/camera_processor.conf",
-    "/etc/supervisor/conf.d/live_view_server.conf",
+    "/etc/supervisor/conf.d/recorder.conf",
+    "/etc/supervisor/conf.d/live.conf",
     "/etc/supervisor/conf.d/nginx.conf",
+    "/etc/supervisor/conf.d/cron.conf",
 ]
 
 for template in template_file_list:

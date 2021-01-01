@@ -5,12 +5,12 @@ import subprocess
 import sys
 import time
 
-from pymediainfo import MediaInfo
 import prctl
+from pymediainfo import MediaInfo
 
-from app.storage import get_camera, add_video_file
+from app.storage import add_video_file, get_camera
+from app.utils import dir_name_from_file_name, start_time_from_file_name
 from default import ENV_VAR_JANUS_RTP_START_PORT, ENV_VAR_RECORDINGS_DIR_PATH
-from utils import start_time_from_file_name, dir_name_from_file_name
 
 
 recordings_dir_path = os.environ[ENV_VAR_RECORDINGS_DIR_PATH]

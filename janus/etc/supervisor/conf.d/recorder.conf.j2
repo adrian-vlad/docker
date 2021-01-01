@@ -1,8 +1,9 @@
-[program:_live_streaming]
-command=gunicorn --workers 1 --bind unix:/var/run/gunicorn.sock -m 007 live_view_server:app
-directory=/opt/scripts
+{% for camera in cameras %}
+
+[program:{{ camera.name }}]
+command=python3 /opt/scripts/recorder.py {{ camera.name }}
 umask=022
-priority=40
+priority=10
 autostart=true
 autorestart=true
 startsecs=5
@@ -16,6 +17,8 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
 
-[group:_live_streaming]
-programs=_live_streaming
-priority=30
+[group:{{ camera.name }}]
+programs={{ camera.name }}
+priority=10
+
+{% endfor %}
