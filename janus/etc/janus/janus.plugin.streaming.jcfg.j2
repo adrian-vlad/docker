@@ -2,18 +2,18 @@
 general: {
 }
 
-{% for name, value in streaming_config["camera"].items() %}
-{% if name == "general" %}
+{% for camera in cameras %}
+{% if camera.name == "general" %}
 {# 'general' cannot be used as stream name #}
 {{ 0/0 }}
 {% endif %}
-{{ name }}: {
+{{ camera.name }}: {
     type = "rtp"
-    id = {{ value.id }}
-    description = "{{ name }}"
+    id = {{ camera.sequence }}
+    description = "{{ camera.name }}"
     audio = false
     video = true
-    videoport = {{ janus_port_streaming_start + value.id }}
+    videoport = {{ janus_port_streaming_start + camera.sequence }}
     videopt = 96
     videortpmap = "H264/90000"
     videofmtp = "profile-level-id=42e028;packetization-mode=1"

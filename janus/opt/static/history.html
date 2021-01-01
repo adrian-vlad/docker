@@ -50,7 +50,6 @@
  * @method setTimestamp(int millisTimestamp):
  *          sets a millis timestamp on this element
  */
-// TODO: combine updateTimestampCb, pauseCb, resumeCb into one
 function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisibleCb)
 {
     var groups = new vis.DataSet();
@@ -186,6 +185,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
         var percent = currentPosition * 100 / currentRange;
         if (percent < 5 || percent > 95)
         {
+            // TODO: would be better to use rolling mode, but this bug: https://github.com/visjs/vis-timeline/issues/607
             timeline.moveTo(vis.moment(timestamp));
         }
     }
@@ -577,7 +577,7 @@ var timeline = undefined;
 /* initial prepare */
 {
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.open("GET", "/static/recordings/recordings.json", true);
+    xmlhttp.open("GET", "/live/recordings.json", true);
     xmlhttp.send();
 
     xmlhttp.onreadystatechange = function() {

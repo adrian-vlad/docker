@@ -1,7 +1,7 @@
-{% for name, value in streaming_config["camera"].items() %}
+{% for camera in cameras %}
 
-[program:{{ name }}]
-command=ffmpeg -nostdin -nostats -loglevel +level+info -rtsp_transport {{ value.rtsp_transport | default("udp", true) }} -i "{{ value.src }}" -f segment -metadata title="" -c copy -an -flags +global_header -segment_time 900 -segment_atclocktime 1 -reset_timestamps 1 -segment_format mp4 -segment_format_options movflags=faststart -strftime 1 -y "{{ recordings_dir_path + '/' + name }}"/%%Y_%%m_%%d/%%s_%%Y-%%m-%%d_%%H-%%M-%%S.mp4 -f rtp -an -c:v copy -flags global_header -bsf dump_extra rtp://localhost:{{ janus_port_streaming_start + value.id }}
+[program:{{ camera.name }}]
+command=python3 /opt/scripts/recorder.py {{ camera.name }}
 umask=022
 priority=21
 autostart=true
@@ -17,8 +17,8 @@ stdout_logfile_maxbytes=0
 stderr_logfile=/dev/fd/2
 stderr_logfile_maxbytes=0
 
-[group:{{ name }}]
-programs={{ name }}
+[group:{{ camera.name }}]
+programs={{ camera.name }}
 priority=10
 
 {% endfor %}
