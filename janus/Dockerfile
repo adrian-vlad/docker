@@ -15,7 +15,8 @@ RUN apt-get -y update && apt-get -y install \
     nginx \
     mediainfo \
     wget \
-    && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor pymediainfo
+    libcap-dev \
+    && python3 -m pip install pyyaml jinja2 flask gunicorn supervisor pymediainfo python-prctl
 
 COPY etc/ /etc/
 COPY opt/ /opt/

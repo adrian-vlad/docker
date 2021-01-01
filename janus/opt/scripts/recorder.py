@@ -6,6 +6,7 @@ import sys
 import time
 
 from pymediainfo import MediaInfo
+import prctl
 
 from app.storage import get_camera, add_video_file
 from default import ENV_VAR_JANUS_RTP_START_PORT, ENV_VAR_RECORDINGS_DIR_PATH
@@ -73,6 +74,7 @@ p = subprocess.Popen(
     cmd_args,
     stdin=subprocess.PIPE,
     stdout=subprocess.PIPE,
+    preexec_fn=lambda: prctl.set_pdeathsig(signal.SIGKILL),
 )
 
 fd = p.stdout.fileno()
