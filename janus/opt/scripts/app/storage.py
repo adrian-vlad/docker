@@ -65,6 +65,7 @@ def initialize_storage() -> None:
             "   url TEXT NOT NULL,"
             "   sequence INTEGER NOT NULL,"
             "   transport TEXT NOT NULL,"
+            "   segment_time INTEGER NOT NULL,"
             "   enabled BOOLEAN NOT NULL"
             ")"
         )
@@ -72,17 +73,29 @@ def initialize_storage() -> None:
             url = settings["src"]
             order = settings["id"]
             transport = settings.get("rtsp_transport", "udp")
+            segment_time = int(settings.get("segment_time", "900"))
 
             db_write.write(
-                " INSERT INTO Camera (name, url, sequence, transport, enabled)"
-                " VALUES (?, ?, ?, ?, 1)"
+                " INSERT INTO Camera (name, url, sequence, transport, segment_time, enabled)"
+                " VALUES (?, ?, ?, ?, ?, 1)"
                 " ON CONFLICT(name) DO UPDATE "
                 " SET"
                 " url = ?,"
                 " sequence = ?,"
                 " transport = ?,"
+                " segment_time = ?,"
                 " enabled = 1",
-                parameters=(camera, url, order, transport, url, order, transport),
+                parameters=(
+                    camera,
+                    url,
+                    order,
+                    transport,
+                    segment_time,
+                    url,
+                    order,
+                    transport,
+                    segment_time,
+                ),
             )
 
         db_write.write(
@@ -109,7 +122,7 @@ def get_max_total_size() -> str:
 def get_camera(camera_name: str) -> Dict:
     with Reader(DB_PATH) as db_read:
         return db_read.read(
-            " SELECT url, sequence, transport FROM Camera WHERE name = ?",
+            " SELECT url, sequence, transport, segment_time FROM Camera WHERE name = ?",
             parameters=(camera_name,),
         )[0]
 
@@ -117,7 +130,7 @@ def get_camera(camera_name: str) -> Dict:
 def get_enabled_cameras() -> Sequence[Dict]:
     with Reader(DB_PATH) as db_read:
         return db_read.read(
-            " SELECT name, url, sequence, transport FROM Camera WHERE enabled = 1"
+            " SELECT name, url, sequence, transport, segment_time FROM Camera WHERE enabled = 1"
         )
 
 

@@ -44,7 +44,7 @@ cmd_args = [
     "-segment_list",
     f"pipe:1",
     "-segment_time",
-    "10",
+    f"{camera['segment_time']}",
     "-segment_atclocktime",
     "1",
     "-reset_timestamps",

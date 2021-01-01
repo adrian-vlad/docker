@@ -40,6 +40,7 @@ def sync_video_files():
 
     for camera in get_enabled_cameras():
         camera_name = camera["name"]
+        segment_time = int(camera["segment_time"])
 
         disk_video_files = [
             f
@@ -62,6 +63,10 @@ def sync_video_files():
 
             dir_name = f.parent.name
             start_time = start_time_from_file_name(file_name)
+
+            if start_time + segment_time * 2 > time.time():
+                # this might be an in progress video; skip it
+                continue
 
             durations = [
                 track.duration
@@ -115,7 +120,9 @@ def cleanup_drive_space():
 
         remove_video_file(file["camera_name"], file["name"])
 
-        print(f"Removed file {file['name']} for camera {file['camera_name']}")
+        print(
+            f"Removed file {file['name']} for camera {file['camera_name']}", flush=True
+        )
 
         # TODO: remove directory, but only if it's older than today
 
