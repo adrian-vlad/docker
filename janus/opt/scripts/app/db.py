@@ -21,7 +21,12 @@ class Reader(object):
         self._c.close()
 
     def read(self, query, parameters=()):
-        return self._c.execute(query, parameters).fetchall()
+        try:
+            return self._c.execute(query, parameters).fetchall()
+        except Exception as e:
+            print(f"Query failed: '{query}' with params '{parameters}'. Reason: {e}", flush=True)
+
+            raise
 
 
 class Writer(Reader):
