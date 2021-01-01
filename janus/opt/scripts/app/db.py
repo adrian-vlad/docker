@@ -9,6 +9,7 @@ class Reader(object):
     def __init__(self, db_path):
         self._c = sqlite3.connect(db_path, isolation_level=self.ISOLATION_LEVEL)
         self._c.row_factory = sqlite3.Row
+        self._c.execute("pragma journal_mode=wal;")
 
     def __enter__(self):
         return self
