@@ -5,7 +5,7 @@ import os
 
 from flask import Flask, render_template, request
 
-from app.storage import get_enabled_cameras, get_video_files
+from app.storage import get_enabled_cameras, get_events, get_video_files
 
 
 app = Flask(__name__)
@@ -38,8 +38,8 @@ def recordings():
                     "path": os.path.join(
                         uri_prefix, camera["name"], file["directory"], file["name"]
                     ),
-                    "timestamp": file["start_time"] * 1000,
-                    "duration": file["end_time"] - file["start_time"],
+                    "start_time": file["start_time"] * 1000,
+                    "end_time": file["end_time"] * 1000,
                 }
             )
 
@@ -48,7 +48,19 @@ def recordings():
             if highest_timestamp < file["start_time"]:
                 highest_timestamp = file["start_time"]
 
-        cameras[camera["name"]] = {"files": files}
+        events = []
+        for event in get_events(camera["name"]):
+            events.append(
+                {
+                    "name": event["name"],
+                    "start_time": event["start_time"] * 1000,
+                    "end_time": event["end_time"] * 1000
+                    if event["end_time"] is not None
+                    else None,
+                }
+            )
+
+        cameras[camera["name"]] = {"files": files, "events": events}
 
     return json.dumps(
         {

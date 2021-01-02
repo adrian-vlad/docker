@@ -25,6 +25,8 @@ RUN apt-get -y update && apt-get -y install \
     pymediainfo \
     python-prctl \
     schedule \
+    requests \
+    pyhik \
     && true
 
 

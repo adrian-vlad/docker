@@ -32,6 +32,7 @@ template_file_list = [
     "/etc/supervisor/conf.d/listener.conf",
     "/etc/supervisor/conf.d/janus.conf",
     "/etc/supervisor/conf.d/recorder.conf",
+    "/etc/supervisor/conf.d/events.conf",
     "/etc/supervisor/conf.d/live.conf",
     "/etc/supervisor/conf.d/nginx.conf",
     "/etc/supervisor/conf.d/cron.conf",

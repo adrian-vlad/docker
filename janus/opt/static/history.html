@@ -61,16 +61,30 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
     {
         groups.add({id: groupId, content: camera, visible: true});
 
-        recordings.cameras[camera]["files"].forEach(function(file, idx) {
+        recordings.cameras[camera]["files"].forEach(function(file) {
             items.add({
                 id: itemId,
                 group: groupId,
                 type: "background",
                 style: "background-color: #4dc5cb;",
-                start: vis.moment(file["timestamp"]),
-                end: vis.moment(file["timestamp"]).add(file["duration"], "milliseconds"),
+                start: vis.moment(file["start_time"]),
+                end: vis.moment(file["end_time"]),
                 // TODO: bug in vis: tooltip for background items doesn't work: https://github.com/visjs/vis-timeline/issues/246
                 title: file["path"]
+            });
+
+            itemId++;
+        });
+
+        recordings.cameras[camera]["events"].forEach(function(event) {
+            items.add({
+                id: itemId,
+                group: groupId,
+                type: (event["end_time"] == null) ? "box" : "range",
+                style: "background-color: #195f2f;",
+                start: vis.moment(event["start_time"]),
+                end: vis.moment(event["end_time"]),
+                content: event["name"]
             });
 
             itemId++;

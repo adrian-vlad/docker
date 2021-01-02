@@ -1,0 +1,24 @@
+{% for camera in cameras %}
+
+[program:{{ camera.name }}_events]
+command=python3 /opt/scripts/events.py {{ camera.name }}
+umask=022
+priority=20
+autostart=true
+autorestart=true
+startsecs=5
+startretries=5
+stopsignal=INT
+stopwaitsecs=5
+stopasgroup=true
+killasgroup=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+
+[group:{{ camera.name }}_events]
+programs={{ camera.name }}_events
+priority=20
+
+{% endfor %}

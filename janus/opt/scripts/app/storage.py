@@ -7,10 +7,12 @@ __all__ = [
     "get_video_files_time_ordered",
     "add_video_file",
     "remove_video_file",
+    "add_event",
+    "get_events",
 ]
 
 import os
-from typing import Dict, List, Sequence
+from typing import Dict, List, Optional, Sequence
 
 import yaml
 
@@ -66,6 +68,9 @@ def initialize_storage() -> None:
             "   sequence INTEGER NOT NULL,"
             "   transport TEXT NOT NULL,"
             "   segment_time INTEGER NOT NULL,"
+            "   hik_url TEXT,"
+            "   hik_user TEXT,"
+            "   hik_pass TEXT,"
             "   enabled BOOLEAN NOT NULL"
             ")"
         )
@@ -74,16 +79,36 @@ def initialize_storage() -> None:
             order = settings["id"]
             transport = settings.get("rtsp_transport", "udp")
             segment_time = int(settings.get("segment_time", "900"))
+            hik_url = None
+            hik_user = None
+            hik_pass = None
+            if "hik" in settings:
+                hik_url = settings["hik"].get("url", None)
+                hik_user = settings["hik"].get("user", None)
+                hik_pass = settings["hik"].get("pass", None)
 
             db_write.write(
-                " INSERT INTO Camera (name, url, sequence, transport, segment_time, enabled)"
-                " VALUES (?, ?, ?, ?, ?, 1)"
+                " INSERT INTO Camera ("
+                "   name,"
+                "   url,"
+                "   sequence,"
+                "   transport,"
+                "   segment_time,"
+                "   hik_url,"
+                "   hik_user,"
+                "   hik_pass,"
+                "   enabled"
+                ")"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)"
                 " ON CONFLICT(name) DO UPDATE "
                 " SET"
                 " url = ?,"
                 " sequence = ?,"
                 " transport = ?,"
                 " segment_time = ?,"
+                " hik_url = ?,"
+                " hik_user = ?,"
+                " hik_pass = ?,"
                 " enabled = 1",
                 parameters=(
                     camera,
@@ -91,10 +116,16 @@ def initialize_storage() -> None:
                     order,
                     transport,
                     segment_time,
+                    hik_url,
+                    hik_user,
+                    hik_pass,
                     url,
                     order,
                     transport,
                     segment_time,
+                    hik_url,
+                    hik_user,
+                    hik_pass,
                 ),
             )
 
@@ -111,6 +142,17 @@ def initialize_storage() -> None:
             ")"
         )
 
+        db_write.write(
+            " CREATE TABLE IF NOT EXISTS"
+            " Event("
+            "   camera_name TEXT NOT NULL,"
+            "   name TEXT NOT NULL,"
+            "   start_time INTEGER NOT NULL,"
+            "   end_time INTEGER,"
+            "   PRIMARY KEY(camera_name, name, start_time)"
+            ")"
+        )
+
 
 def get_max_total_size() -> str:
     with Reader(DB_PATH) as db_read:
@@ -122,7 +164,8 @@ def get_max_total_size() -> str:
 def get_camera(camera_name: str) -> Dict:
     with Reader(DB_PATH) as db_read:
         return db_read.read(
-            " SELECT url, sequence, transport, segment_time FROM Camera WHERE name = ?",
+            " SELECT url, sequence, transport, segment_time, hik_url, hik_user, hik_pass"
+            " FROM Camera WHERE name = ?",
             parameters=(camera_name,),
         )[0]
 
@@ -182,4 +225,28 @@ def remove_video_file(camera_name: str, file_name: str) -> None:
         db_write.write(
             " DELETE FROM Video WHERE camera_name = ? AND name = ?",
             parameters=(camera_name, file_name),
+        )
+
+
+def get_events(camera_name: str) -> Sequence[Dict]:
+    with Reader(DB_PATH) as db_read:
+        return db_read.read(
+            " SELECT name, start_time, end_time"
+            " FROM Event "
+            " WHERE camera_name = ?",
+            parameters=(camera_name,),
+        )
+
+
+def add_event(
+    camera_name: str, name: str, start_time: int, end_time: Optional[int]
+) -> None:
+    with Writer(DB_PATH) as db_write:
+        db_write.write(
+            " INSERT INTO Event (camera_name, name, start_time, end_time)"
+            " VALUES (?, ?, ?, ?)"
+            " ON CONFLICT(camera_name, name, start_time) DO UPDATE "
+            " SET"
+            " end_time = ?",
+            parameters=(camera_name, name, start_time, end_time, end_time),
         )

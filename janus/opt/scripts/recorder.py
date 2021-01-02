@@ -112,7 +112,7 @@ def add_video(video_name: str) -> None:
         if track.track_type == "Video"
     ]
     if durations:
-        duration = int(durations[0])
+        duration = int(durations[0]) / 1000
     else:
         print(f"[ERR] File {full_path} is not a video file; deleting")
         os.unlink(full_path)
