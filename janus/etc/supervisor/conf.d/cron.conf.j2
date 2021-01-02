@@ -1,5 +1,5 @@
 [program:_cron]
-command=python3 /opt/scripts/cron.py
+command=nice -n19 python3 /opt/scripts/cron.py
 umask=022
 priority=20
 autostart=true
