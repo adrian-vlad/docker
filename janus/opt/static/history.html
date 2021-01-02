@@ -80,10 +80,10 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
             items.add({
                 id: itemId,
                 group: groupId,
-                type: (event["end_time"] == null) ? "box" : "range",
+                type: "range",
                 style: "background-color: #195f2f;",
                 start: vis.moment(event["start_time"]),
-                end: vis.moment(event["end_time"]),
+                end: (event["end_time"] != null) ? vis.moment(event["end_time"]) : vis.moment(event["start_time"]).add(1, "seconds"),
                 content: event["name"]
             });
 
@@ -626,7 +626,7 @@ var timeline = undefined;
 
             /* sort the files chronologically */
             recordings.cameras[camera].files.sort(function(file1, file2) {
-                return (file1.timestamp > file2.timestamp) ? 1 : ((file2.timestamp > file1.timestamp) ? -1 : 0);
+                return (file1.start_time > file2.start_time) ? 1 : ((file2.start_time > file1.start_time) ? -1 : 0);
             });
         }
 
@@ -763,7 +763,7 @@ function loadNext(camera)
 
         var startIdx = 0;
         var endIdx = files.length - 1;
-        if (files[startIdx].timestamp - timestamp > 0 || files[endIdx].timestamp - timestamp < 0)
+        if (files[startIdx].start_time > timestamp || files[endIdx].start_time < timestamp)
             return null;
 
         function getFileBinarySearch(files, startIdx, endIdx, timestamp)
@@ -772,7 +772,7 @@ function loadNext(camera)
                 return files[startIdx];
 
             var middleIdx = parseInt((startIdx + endIdx) / 2);
-            var compare = timestamp - files[middleIdx].timestamp;
+            var compare = timestamp - files[middleIdx].start_time;
             if (compare == 0)
                 return files[middleIdx];
             else if (compare < 0)
@@ -786,11 +786,10 @@ function loadNext(camera)
 
     if (file != null)
     {
-        var mili = timestamp - file.timestamp;
-        if (mili < file.duration)
+        if (timestamp < file.end_time)
         {
             var newSrc = "/" + file.path;
-            cameraElem.doLoad(newSrc, file.timestamp, mili / 1000);
+            cameraElem.doLoad(newSrc, file.start_time, (timestamp - file.start_time) / 1000);
         }
         else
         {
