@@ -77,13 +77,24 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
         });
 
         recordings.cameras[camera]["events"].forEach(function(event) {
+            let start_time = vis.moment(event["start_time"]);
+            let end_time = event["end_time"];
+            if (end_time == null)
+                end_time = vis.moment(start_time).add(1, "seconds");
+            else
+                end_time = vis.moment(end_time);
+
+            if (end_time.diff(start_time, "seconds") <= 0)
+                end_time = vis.moment(start_time).add(1, "seconds");
+
             items.add({
                 id: itemId,
                 group: groupId,
                 type: "range",
                 style: "background-color: #195f2f;",
-                start: vis.moment(event["start_time"]),
-                end: (event["end_time"] != null) ? vis.moment(event["end_time"]) : vis.moment(event["start_time"]).add(1, "seconds"),
+                start: start_time,
+                end: end_time,
+                title: event["name"],
                 content: event["name"]
             });
 
@@ -139,7 +150,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
         max: vis.moment(recordings.highest_timestamp).add(1, "hours"),
         zoomFriction: 1,
         zoomMin: 10000,
-        stack: false
+        stack: true
     };
 
     var timeline = new vis.Timeline(document.getElementById(divName));
