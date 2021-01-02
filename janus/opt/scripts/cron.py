@@ -138,10 +138,12 @@ def job():
     cleanup_drive_space()
 
 
-def main():
-    schedule.every(10).minutes.do(job)
-    schedule.run_all()
+def run_once():
+    job()
+    return schedule.CancelJob
 
+
+def main():
     def signal_handler(sig, frame):
         if sig == signal.SIGINT or sig == signal.SIGTERM:
             global g_shutdown
@@ -149,6 +151,9 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+
+    schedule.every(10).minutes.do(job)
+    schedule.every(0).minutes.do(run_once)
 
     while not g_shutdown:
         schedule.run_pending()
