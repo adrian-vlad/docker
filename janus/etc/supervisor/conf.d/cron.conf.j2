@@ -1,4 +1,5 @@
 [program:_cron]
+# everything that impacts the disk besides the recording must have low priority
 command=nice -n19 python3 /opt/scripts/cron.py
 umask=022
 priority=20

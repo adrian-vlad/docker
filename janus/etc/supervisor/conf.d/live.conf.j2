@@ -1,5 +1,6 @@
 [program:_live_streaming]
-command=gunicorn --workers 1 --bind unix:/var/run/gunicorn.sock -m 007 live:app
+# everything that impacts the disk besides the recording must have low priority
+command=nice -n19 gunicorn --workers 1 --bind unix:/var/run/gunicorn.sock -m 007 live:app
 directory=/opt/scripts
 umask=022
 priority=30

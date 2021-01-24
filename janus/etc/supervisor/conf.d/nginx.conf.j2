@@ -1,5 +1,6 @@
 [program:_nginx]
-command=/usr/sbin/nginx -g "daemon off;"
+# everything that impacts the disk besides the recording must have low priority
+command=nice -n19 /usr/sbin/nginx -g "daemon off;"
 umask=022
 priority=40
 autostart=true
