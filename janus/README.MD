@@ -18,3 +18,38 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 ###Endpoints
 - `/live/<id>` - shows live view of the respective camera. `id` is an int that corresponds to the index of the respective camera in the `streaming.yml`'s camera array.
 - `/static/history.html` - the page where past recordings can be viewed.
+
+
+## TODO
+- vazut cum detectam ca ffmpeg nu mai inregistreaza sau s-a blocat
+- un stream mai mic separat pentru live
+- history.html:312 Uncaught DOMException: Failed to set the 'playbackRate' property on 'HTMLMediaElement': The provided playback rate (26.889) is not in the supported playback range.
+    at HTMLVideoElement.UserInputVideo.video.doUpdate (http://192.168.111.12/static/history.html:312:31)
+    at updateAll (http://192.168.111.12/static/history.html:833:41)
+    at Timer.updateSecond [as oncomplete] (http://192.168.111.12/static/history.html:668:5)
+    at Timer.step (http://192.168.111.12/static/history.html:473:22)
+- schimbat culoarea la iteme in ceva mai contrastant (poate rosu)
+- filtrare dupa anumite eventuri
+- culori :
+    - video #85d8a6
+    - event #195f2f cu scris alb
+    - folosit className pentru schimbat stilul si culorile
+- in major label sa puna si urmatoarele doua unituri
+- adaugat moment.js si vis.js in static si vazut bundle-ul cu ele doua
+- in video-ul de la shinobi a lui spaceinvader unul din mount-uri e rw-slave
+- configul trebuie montat RO
+
+- cand porneste face sync disk->db
+- in rulare foloseste doar db ca sa ia decizii
+- poate baza de date pusa separat
+- folosit timezone; data de la numele fisierului e in utc, dar in pagina se arata in Bucharest/EastEurope
+- in timp ce playaza, cand dau zoom in timeline se pune pe pauza
+- vazut ca video-urile sunt continue perfect (merge-uit doua video-uri cu bunny)
+- folosit logging
+- in recorder prins erorile de pe stderr si pasate in logger
+- favicon la history.html
+- numele de camere nu tre sa inceapa cu _
+- pus udp si 900 in default.py
+- remove old events
+- remove empty directories
+- default -> constants
