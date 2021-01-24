@@ -43,7 +43,6 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 - in rulare foloseste doar db ca sa ia decizii
 - poate baza de date pusa separat
 - folosit timezone; data de la numele fisierului e in utc, dar in pagina se arata in Bucharest/EastEurope
-- in timp ce playaza, cand dau zoom in timeline se pune pe pauza
 - vazut ca video-urile sunt continue perfect (merge-uit doua video-uri cu bunny)
 - folosit logging
 - in recorder prins erorile de pe stderr si pasate in logger

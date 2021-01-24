@@ -385,9 +385,23 @@ function UserInputVideo(name, onSeekCb, shouldPlayCb, playCb, stopCb, endedCb)
             endedCb(this.id);
     };
     video.doVisible = function(visible) {
-        this.hidden = !visible;
+        if (visible)
+        {
+            this.hidden = false;
 
-        this.doPause();
+            if (shouldPlayCb())
+            {
+                /* we must reset all the videos because this video doesn't know where to start from */
+                stopCb();
+                playCb();
+            }
+        }
+        else
+        {
+            this.doPause();
+
+            this.hidden = true;
+        }
     };
 
     return video;
