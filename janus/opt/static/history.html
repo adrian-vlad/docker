@@ -794,22 +794,22 @@ function loadNext(camera)
 
         var startIdx = 0;
         var endIdx = files.length - 1;
-        if (files[startIdx].start_time > timestamp || files[endIdx].start_time < timestamp)
+        if (files[startIdx].start_time > timestamp || files[endIdx].end_time < timestamp)
             return null;
 
         function getFileBinarySearch(files, startIdx, endIdx, timestamp)
         {
-            if (startIdx == endIdx || startIdx + 1 == endIdx)
+            if (startIdx == endIdx)
                 return files[startIdx];
 
             var middleIdx = parseInt((startIdx + endIdx) / 2);
-            var compare = timestamp - files[middleIdx].start_time;
+            var compare = timestamp - files[middleIdx].end_time;
             if (compare == 0)
                 return files[middleIdx];
             else if (compare < 0)
                 return getFileBinarySearch(files, startIdx, middleIdx, timestamp);
             else
-                return getFileBinarySearch(files, middleIdx, endIdx, timestamp);
+                return getFileBinarySearch(files, middleIdx + 1, endIdx, timestamp);
         }
 
         return getFileBinarySearch(files, 0, files.length - 1, timestamp);
