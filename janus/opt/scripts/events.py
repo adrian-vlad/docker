@@ -1,3 +1,4 @@
+import logging
 import signal
 import sys
 import time
@@ -58,6 +59,10 @@ def init():
     )
 
     camera.start_stream()
+
+    if camera.name is None:
+        logging.error(f"Failed to initialize camera {camera_name}")
+        sys.exit(1)
 
     for sensor, channel_list in camera.current_event_states.items():
         for channel in channel_list:
