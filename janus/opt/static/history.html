@@ -153,7 +153,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
         max: vis.moment(recordings.highest_timestamp).add(1, "hours"),
         zoomFriction: 1,
         zoomMin: 10000,
-        stack: true
+        stack: false
     };
 
     var timeline = new vis.Timeline(document.getElementById(divName));
