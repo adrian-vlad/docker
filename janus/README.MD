@@ -54,3 +54,4 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 - default -> constants
 - verificat ca e timp destul pentru ca recorderul sa se opreasca
 - elementele stackabile cu un buton de enable/disable
+- add example streaming.yml file
