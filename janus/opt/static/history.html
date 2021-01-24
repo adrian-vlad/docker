@@ -817,13 +817,14 @@ function loadNext(camera)
 
     if (file != null)
     {
-        if (timestamp < file.end_time)
+        if (file.start_time < timestamp && timestamp < file.end_time)
         {
             var newSrc = "/" + file.path;
             cameraElem.doLoad(newSrc, file.start_time, (timestamp - file.start_time) / 1000);
         }
         else
         {
+            /* it's possible that there are gaps in the recordings */
             cameraElem.doLoad("", 0, 0);
         }
     }
