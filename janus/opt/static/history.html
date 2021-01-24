@@ -161,13 +161,16 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
 
     /* we allow for time change on click, but not if the timeline is dragged around */
     var timelineChanged = undefined;
+    var previousThing = undefined;
 
-    timeline.on("mouseDown", function() {
+    timeline.on("mouseDown", function(properties) {
         timelineChanged = false;
+
+        previousThing = properties.what;
     });
 
     timeline.on("click", function(properties) {
-        if (properties.what === null)
+        if (previousThing === null)
         {
             groups.forEach(function(group) {
                 groups.update({ id: group.id, visible: true });
@@ -175,7 +178,7 @@ function RecordingsTimeline(divName, recordings, updateTimestampCb, groupVisible
 
             return;
         }
-        if (properties.what == "group-label")
+        if (previousThing == "group-label")
         {
             groups.forEach(function(group) {
                 if (group.id == properties.group)
