@@ -24,7 +24,10 @@ class Reader(object):
         try:
             return self._c.execute(query, parameters).fetchall()
         except Exception as e:
-            print(f"Query failed: '{query}' with params '{parameters}'. Reason: {e}", flush=True)
+            print(
+                f"Query failed: '{query}' with params '{parameters}'. Reason: {e}",
+                flush=True,
+            )
 
             raise
 
