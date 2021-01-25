@@ -1,4 +1,5 @@
 import fcntl
+import logging
 import os
 import signal
 import subprocess
@@ -114,7 +115,7 @@ def add_video(video_name: str) -> None:
     if durations:
         duration = int(durations[0]) / 1000
     else:
-        print(f"[ERR] File {full_path} is not a video file; deleting")
+        logging.error(f"File {full_path} is not a video file; deleting")
         os.unlink(full_path)
 
         return
