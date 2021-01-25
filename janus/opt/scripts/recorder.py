@@ -53,7 +53,8 @@ cmd_args = [
     "-segment_format",
     "mp4",
     "-segment_format_options",
-    "movflags=faststart",
+    # used fragmented mp4 to eliminate the recording gaps created by the second pass for faststart
+    "moov_size=2000000",
     "-strftime",
     "1",
     "-y",
