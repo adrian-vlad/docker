@@ -55,3 +55,15 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 - verificat ca e timp destul pentru ca recorderul sa se opreasca
 - elementele stackabile cu un buton de enable/disable
 - add example streaming.yml file
+- make live video resize with the page
+- vis.js performance
+- se poate muta axa in partea de sus si la fel si itemele: orientation: 'top'
+- should record fragmented mp4 to avoid file corruption if the recording machine is suddenly powered off:
+    - movflags=frag_keyframe+default_base_moof+empty_moov+separate_moof
+    - fragmented mp4 video file in "video" tag is slow to start in Chrome. Firefox works better. Probably because Chome wants to read all the moof atoms before starting playing.
+    Link to test: https://happy-testing.s3-eu-west-1.amazonaws.com/stack-overflow/help.mp4
+    - for the above reason, we should try to make this project work in Firefox
+    - https://stackoverflow.com/questions/61803136/ffmpeg-fragmented-mp4-takes-long-time-to-start-playing-on-chrome
+    - http://atomicparsley.sourceforge.net/
+    - https://trac.ffmpeg.org/ticket/5702
+    - qtfaststart -l <video_file>
