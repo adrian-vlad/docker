@@ -57,6 +57,7 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 - add example streaming.yml file
 - make live video resize with the page
 - vis.js performance
+- de vazut ffpmeg multithreading daca poate sa accelereze crearea de segmente ca sa nu mai ramana spatiul de aproape o secunda intre segmente
 - se poate muta axa in partea de sus si la fel si itemele: orientation: 'top'
 - should record fragmented mp4 to avoid file corruption if the recording machine is suddenly powered off:
     - movflags=frag_keyframe+default_base_moof+empty_moov+separate_moof
