@@ -68,3 +68,4 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
     - http://atomicparsley.sourceforge.net/
     - https://trac.ffmpeg.org/ticket/5702
     - qtfaststart -l <video_file>
+- https://github.com/aiortc/aiortc/pull/434
