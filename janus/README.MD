@@ -53,6 +53,8 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
   - the video elements automatically resize and rearrange to occupy as much of the page as possible
   - can collapse the timeline element to have more space for displaying the recordings
 
+![example history.html](/janus/history_html.png)
+
 ## TODO
 - vazut cum detectam ca ffmpeg nu mai inregistreaza sau s-a blocat
 - un stream mai mic separat pentru live
