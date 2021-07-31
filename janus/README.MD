@@ -42,9 +42,16 @@ docker run --init --rm -v <path_to_directory_containing_streaming.yml_file>:/opt
 ```
 
 ### Endpoints
-- `/live/<id>` - shows live view of the respective camera. `id` is an int that corresponds to the index of the respective camera in the `streaming.yml`'s camera array.
-- `/static/history.html` - the page where past recordings can be viewed.
-
+- `/live/<id>` - shows live view of the respective camera. `id` is an int that corresponds to the index of the respective camera in the `streaming.yml`'s camera array (first camera has id 1, second camera id 2 and so on).
+- `/static/history.html` - the page where past recordings can be viewed. This page has a few nice features:
+  - all cameras play at the same time and keep their time synchronized
+  - play speed can be increased or decreased
+  - video files can be saved on the device
+  - can scroll the time using the timeline panel or the time bar of each video element
+  - can disable one or more cameras by clicking on their name in the timeline; also enable them back by pressin `show all`
+  - displays events for hikvision cameras only
+  - the video elements automatically resize and rearrange to occupy as much of the page as possible
+  - can collapse the timeline element to have more space for displaying the recordings
 
 ## TODO
 - vazut cum detectam ca ffmpeg nu mai inregistreaza sau s-a blocat
