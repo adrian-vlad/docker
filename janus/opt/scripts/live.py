@@ -50,6 +50,10 @@ def recordings():
 
         events = []
         for event in get_events(camera["name"]):
+            # TODO: need to delete the events from storage and rebuild the docker image
+            if event["start_time"] < lowest_timestamp:
+                continue
+
             events.append(
                 {
                     "name": event["name"],
